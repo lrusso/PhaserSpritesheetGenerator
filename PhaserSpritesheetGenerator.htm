@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>Phaser Spritesheet Generator</title>
+		<style>
+			html,body{margin:0;padding:0;background-color:white}
+			canvas{display:none;text-rendering:optimizeLegibility}
+			div{position:absolute;left:0;right:0;top:0;width:auto}
+			input[type=text]{height:30px;width:90px;font-family:Arial;font-size:13px;margin:0;padding:0;box-sizing:border-box}
+			input[type=file]{height:30px;font-family:Arial;font-size:13px;line-height:30px;vertical-align:top;margin:0;padding:0;box-sizing:border-box}
+			img{display:inline-block}
+		</style>
+	</head>
+	<body>
+		<div>
+			<input type="file" id="screenshotsFiles" multiple="true"><br />
+			<img width="320" height="200" id="finalResult" alt="banner" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5AodAgAMo/D8kgAAAAtJREFUCNdj+A8EAAn7A/1jJsWPAAAAAElFTkSuQmCC">
+		</div>
+
+		<script>
+			var images = [];
+			var imagesIndex = 0;
+			var imagesLoaded = 0;
+			var imagesTotal = 0;
+
+			window.addEventListener("load", function()
+				{
+				// CLEARING ALL THE INPUTTED VALUES (IF ANY)
+				document.getElementById("screenshotsFiles").value = null;
+
+				function update()
+					{
+					// CLEARING ALL THE PREVIOUS VALUES (IF ANY)
+					images = [];
+					imagesIndex = 0;
+					imagesLoaded = 0;
+
+					// UPDATING THE IMAGESTOTAL VALUE
+					imagesTotal = document.getElementById("screenshotsFiles").files.length;
+
+					// START LOADING THE IMAGES
+					loadImage();
+					}
+
+				function loadImage()
+					{
+					try
+						{
+						// GETTING THE EXTENSION
+						var extension = document.getElementById("screenshotsFiles").files[imagesIndex].name.split(".").pop().toLowerCase();
+
+						// CHECKING THE EXTENSION IN ORDER TO KNOW IF THE FILE IS AN IMAGE
+						if (extension=="jpg" | extension=="jpeg" | extension=="png")
+							{
+							// CREATING THE FILEREADER
+							var filereader = new FileReader();
+
+							// SETTING WHAT WILL HAPPEN WHEN THE FILE IS LOADED
+							filereader.onload = function()
+								{
+								// LOADING THE IMAGE FILE
+								var tempImage = new Image;
+								tempImage.onload = function()
+									{
+									// ADDING THE IMAGE TO THE IMAGE ARRAY
+									images.push(tempImage);
+
+									// UPDATING THE IMAGES INDEX
+									imagesIndex = imagesIndex + 1;
+
+									// UPDATING THE IMAGES LOADED COUNTER
+									imagesLoaded = imagesLoaded + 1;
+
+									// CHECKING IF ALL THE IMAGES WERE LOADED
+									if (imagesLoaded==imagesTotal)
+										{
+										// MERGING ALL THE IMAGES
+										mergeImages();
+										}
+										else
+										{
+										// CONTINUE LOADING ALL THE IMAGES
+										loadImage();
+										}
+									};
+
+								// LOADING THE IMAGE SOURCE
+								tempImage.src = filereader.result;
+								};
+
+							// READING/LOADING THE FILE
+							filereader.readAsDataURL(document.getElementById("screenshotsFiles").files[imagesIndex]);
+							}
+						}
+						catch(err)
+						{
+						}
+					}
+
+				function mergeImages()
+					{
+					try
+						{
+						// UPDATING THE FINAL IMAGE WIDTH AND HEIGHT
+						document.getElementById("finalResult").style.width = (images[0].width * imagesTotal) + "px";
+						document.getElementById("finalResult").style.height = images[0].height + "px";
+
+						// CREATING THE CANVAS
+						var finalCanvas = document.createElement("canvas");
+
+						// UPDATING CANVAS SIZE
+						finalCanvas.width = images[0].width * imagesTotal;
+						finalCanvas.height = images[0].height;
+
+						// GETTING THE CONTEXT
+						var finalContext = finalCanvas.getContext("2d");
+
+						// LOOPING ALL THE IMAGES
+						for (var i=0;i<imagesTotal;i++)
+							{
+							// DRAWING EVERY IMAGE
+							finalContext.drawImage(images[i], i * images[0].width, 0, images[0].width, images[0].height);
+							}
+
+						// EXPORTING THE PICTURE AS A PNG IMAGE IN BASE64 FORMAT
+						document.getElementById("finalResult").src = finalCanvas.toDataURL("data/png");
+						}
+						catch(err)
+						{
+						}
+					}
+
+				// SETTING WHAT WILL HAPPEN WHEN THE USER SELECTS A FILE
+				document.getElementById("screenshotsFiles").addEventListener("change",function(e){update()});
+				});
+		</script>
+	</body>
+</html>
