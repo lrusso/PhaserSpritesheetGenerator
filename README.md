@@ -6,7 +6,7 @@ Phaser Spritesheet Generator in JavaScript.
 
 * Select all the frames that you will need in your spritesheet.
 * Set how many columns would like to be used in your spritesheet.
-* Set the tileWidth and tileHeight values (optional).
+* Set the tileWidth and tileHeight values (optional, for resizing all the frames).
 * Click in the 'GENERATE SPRITESHEET' button.
 * Download the generated spritesheet image.
 
