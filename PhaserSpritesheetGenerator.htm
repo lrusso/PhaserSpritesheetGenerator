@@ -14,6 +14,7 @@
 	</head>
 	<body>
 		<div>
+			<input type="text" id="spriteSheetColumns" placeholder="Columns">
 			<input type="file" id="screenshotsFiles" multiple="true"><br />
 			<img width="320" height="200" id="finalResult" alt="finalResult" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5AodAgAMo/D8kgAAAAtJREFUCNdj+A8EAAn7A/1jJsWPAAAAAElFTkSuQmCC">
 		</div>
@@ -23,10 +24,16 @@
 			var imagesIndex = 0;
 			var imagesLoaded = 0;
 			var imagesTotal = 0;
+			var imagesXChecker = 0;
+			var imagesYChecker = 0;
 
 			window.addEventListener("load", function()
 				{
+				// GETTING ALL THE ELEMENTS IN THE WEB FORM
+				var spriteSheetColumns = document.getElementById("spriteSheetColumns");
+
 				// CLEARING ALL THE INPUTTED VALUES (IF ANY)
+				spriteSheetColumns.value = "5";
 				document.getElementById("screenshotsFiles").value = null;
 
 				function update()
@@ -35,6 +42,8 @@
 					images = [];
 					imagesIndex = 0;
 					imagesLoaded = 0;
+					imagesXChecker = 0;
+					imagesYChecker = 0;
 
 					// UPDATING THE IMAGESTOTAL VALUE
 					imagesTotal = document.getElementById("screenshotsFiles").files.length;
@@ -103,15 +112,15 @@
 					try
 						{
 						// UPDATING THE FINAL IMAGE WIDTH AND HEIGHT
-						document.getElementById("finalResult").style.width = (images[0].width * imagesTotal) + "px";
-						document.getElementById("finalResult").style.height = images[0].height + "px";
+						document.getElementById("finalResult").style.width = (images[0].width * spriteSheetColumns.value) + "px";
+						document.getElementById("finalResult").style.height = (images[0].height * Math.ceil(imagesTotal / spriteSheetColumns.value)) + "px";
 
 						// CREATING THE CANVAS
 						var finalCanvas = document.createElement("canvas");
 
 						// UPDATING CANVAS SIZE
-						finalCanvas.width = images[0].width * imagesTotal;
-						finalCanvas.height = images[0].height;
+						finalCanvas.width = images[0].width * spriteSheetColumns.value;
+						finalCanvas.height = images[0].height * Math.ceil(imagesTotal / spriteSheetColumns.value);
 
 						// GETTING THE CONTEXT
 						var finalContext = finalCanvas.getContext("2d");
@@ -119,8 +128,21 @@
 						// LOOPING ALL THE IMAGES
 						for (var i=0;i<imagesTotal;i++)
 							{
-							// DRAWING EVERY IMAGE
-							finalContext.drawImage(images[i], i * images[0].width, 0, images[0].width, images[0].height);
+							// CHECKING IF THE IMAGE IS GOING TO BE DRAWN OFF THE SCREEN
+							if (imagesXChecker>=spriteSheetColumns.value)
+								{
+								// RESETTING THE COLUMN COUNTER
+								imagesXChecker = 0;
+
+								// UPDATING THE ROW COUNTER
+								imagesYChecker = imagesYChecker + 1;
+								}
+
+							// DRAWING THE IMAGE
+							finalContext.drawImage(images[i], imagesXChecker * images[0].width, imagesYChecker * images[0].height, images[0].width, images[0].height);
+
+							// UPDATING THE COLUMN COUNTER
+							imagesXChecker = imagesXChecker + 1;
 							}
 
 						// EXPORTING THE PICTURE AS A PNG IMAGE IN BASE64 FORMAT
