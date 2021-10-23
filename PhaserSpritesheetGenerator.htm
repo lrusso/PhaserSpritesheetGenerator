@@ -153,6 +153,9 @@
 						}
 					}
 
+				// SETTING WHAT WILL HAPPEN WHEN THE USER TYPES IN A INPUT BOX
+				document.getElementById("spriteSheetColumns").addEventListener("input",function(e){update()});
+
 				// SETTING WHAT WILL HAPPEN WHEN THE USER SELECTS A FILE
 				document.getElementById("screenshotsFiles").addEventListener("change",function(e){update()});
 				});
