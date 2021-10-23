@@ -7,15 +7,19 @@
 			html,body{margin:0;padding:0;background-color:white}
 			canvas{display:none;text-rendering:optimizeLegibility}
 			div{position:absolute;left:0;right:0;top:0;width:auto}
-			input[type=text]{height:30px;width:90px;font-family:Arial;font-size:13px;margin:0;padding:0;box-sizing:border-box}
+			input[type=text]{height:30px;width:130px;font-family:Arial;font-size:13px;margin:0;padding:0;box-sizing:border-box}
 			input[type=file]{height:30px;font-family:Arial;font-size:13px;line-height:30px;vertical-align:top;margin:0;padding:0;box-sizing:border-box}
+			input[type=button]{display:none}
 			img{display:inline-block}
 		</style>
 	</head>
 	<body>
 		<div>
 			<input type="text" id="spriteSheetColumns" placeholder="Columns">
-			<input type="file" id="screenshotsFiles" multiple><br />
+			<input type="text" id="tileWidth" placeholder="tileWidth (optional)">
+			<input type="text" id="tileHeight" placeholder="tileHeight (optional)">
+			<input type="file" id="screenshotsFiles" multiple>
+			<input type="button" id="generate" value="GENERATE SPRITESHEET"><br/>
 			<img width="320" height="200" id="finalResult" alt=" " src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5AodAgAMo/D8kgAAAAtJREFUCNdj+A8EAAn7A/1jJsWPAAAAAElFTkSuQmCC">
 		</div>
 
@@ -31,9 +35,14 @@
 				{
 				// GETTING ALL THE ELEMENTS IN THE WEB FORM
 				var spriteSheetColumns = document.getElementById("spriteSheetColumns");
+				var tileWidth = document.getElementById("tileWidth");
+				var tileHeight = document.getElementById("tileHeight");
 
 				// CLEARING ALL THE INPUTTED VALUES (IF ANY)
 				spriteSheetColumns.value = "5";
+				tileWidth.value = "";
+				tileHeight.value = "";
+
 				document.getElementById("screenshotsFiles").value = null;
 
 				function update()
@@ -42,8 +51,6 @@
 					images = [];
 					imagesIndex = 0;
 					imagesLoaded = 0;
-					imagesXChecker = 0;
-					imagesYChecker = 0;
 
 					// UPDATING THE IMAGESTOTAL VALUE
 					imagesTotal = document.getElementById("screenshotsFiles").files.length;
@@ -85,7 +92,8 @@
 									if (imagesLoaded==imagesTotal)
 										{
 										// MERGING ALL THE IMAGES
-										mergeImages();
+										//mergeImages();
+										document.getElementById("generate").style.display = "inline-block";
 										}
 										else
 										{
@@ -111,19 +119,44 @@
 					{
 					try
 						{
+						// CLEARING ALL THE PREVIOUS VALUES
+						imagesXChecker = 0;
+						imagesYChecker = 0;
+
+						// CREATING THE VALUES FOR SETTING THE FINAL WIDTH AND HEIGHT FOR EACH FRAME
+						var finalWidth;
+						var finalHeight;
+
+						// CHECKING IF THE USER SET A CUSTOM WIDTH AND HEIGHT FOR EACH FRAME
+						if (tileWidth.value!="" && tileHeight.value!="")
+							{
+							// SETTING THE CUSTOM WIDTH AND HEIGHT FOR EACH FRAME
+							finalWidth = tileWidth.value;
+							finalHeight = tileHeight.value;
+							}
+							else
+							{
+							// SETTING THE FIRST IMAGE WIDTH AND HEIGHT FOR EACH FRAME
+							finalWidth = images[0].width;
+							finalHeight = images[0].height;
+							}
+
 						// UPDATING THE FINAL IMAGE WIDTH AND HEIGHT
-						document.getElementById("finalResult").style.width = (images[0].width * spriteSheetColumns.value) + "px";
-						document.getElementById("finalResult").style.height = (images[0].height * Math.ceil(imagesTotal / spriteSheetColumns.value)) + "px";
+						document.getElementById("finalResult").style.width = (finalWidth * spriteSheetColumns.value) + "px";
+						document.getElementById("finalResult").style.height = (finalHeight * Math.ceil(imagesTotal / spriteSheetColumns.value)) + "px";
 
 						// CREATING THE CANVAS
 						var finalCanvas = document.createElement("canvas");
 
 						// UPDATING CANVAS SIZE
-						finalCanvas.width = images[0].width * spriteSheetColumns.value;
-						finalCanvas.height = images[0].height * Math.ceil(imagesTotal / spriteSheetColumns.value);
+						finalCanvas.width = finalWidth * spriteSheetColumns.value;
+						finalCanvas.height = finalHeight * Math.ceil(imagesTotal / spriteSheetColumns.value);
 
 						// GETTING THE CONTEXT
 						var finalContext = finalCanvas.getContext("2d");
+
+						// DISABLING THE SMOOTH RESIZING
+						finalContext.imageSmoothingEnabled = false;
 
 						// LOOPING ALL THE IMAGES
 						for (var i=0;i<imagesTotal;i++)
@@ -139,7 +172,7 @@
 								}
 
 							// DRAWING THE IMAGE
-							finalContext.drawImage(images[i], imagesXChecker * images[0].width, imagesYChecker * images[0].height, images[0].width, images[0].height);
+							finalContext.drawImage(images[i], imagesXChecker * finalWidth, imagesYChecker * finalHeight, finalWidth, finalHeight);
 
 							// UPDATING THE COLUMN COUNTER
 							imagesXChecker = imagesXChecker + 1;
@@ -153,8 +186,8 @@
 						}
 					}
 
-				// SETTING WHAT WILL HAPPEN WHEN THE USER TYPES IN A INPUT BOX
-				document.getElementById("spriteSheetColumns").addEventListener("input",function(e){update()});
+				// SETTING WHAT WILL HAPPEN WHEN THE USER CLICKS ON THE GENERATE BUTTON
+				document.getElementById("generate").addEventListener("click",function(e){mergeImages()});
 
 				// SETTING WHAT WILL HAPPEN WHEN THE USER SELECTS A FILE
 				document.getElementById("screenshotsFiles").addEventListener("change",function(e){update()});
